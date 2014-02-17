@@ -25,3 +25,17 @@ Adding a submodule is pretty easy, so this script only saves you one step. It ad
 ```
 git addmodule https://github.com/my/submodule.git path/to/submodule
 ```
+
+# Installation
+
+A Makefile is included for ease of installation and uninstallation. It installs and uninstalls from $HOME/bin, so make sure this is in your path.
+
+```
+make
+```
+
+# Uninstall
+
+```
+make uninstall
+```
