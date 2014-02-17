@@ -12,5 +12,5 @@ $(OBJDIR):
 $(OBJDIR)/%: %
 	cp $< $@
 
-clean:
+uninstall:
 	rm -f $(OBJS)
