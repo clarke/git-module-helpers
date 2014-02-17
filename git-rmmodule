@@ -1,0 +1,84 @@
+#!/bin/bash
+
+##
+# Clarke Retzer <clarkeretzer@gmail.com>
+#
+# A convenient wrapper around removing a submodule.
+# I seemed to be doing this a lot and there a several steps involved,
+# so I figured it would be a good idea to write a wrapper.
+##
+
+MODULE_PATH=$1
+
+echo "Removing ${MODULE_PATH}"
+
+NOW_STR=`date +"%Y%m%d%H%M%S"`
+
+
+function remove_submodule_section_from() {
+  file=$1
+
+  echo "Updating ${file}"
+
+  content=""
+  relevant_section=0
+
+  while IFS= read -r line; do
+    if [ "$line" == "[submodule \"${MODULE_PATH}\"]" ]; then
+      relevant_section=1
+      continue
+    elif [[ "$line" =~ ^\[submodule\  ]]; then
+      relevant_section=0
+    fi
+
+    if [ $relevant_section -eq 0 ]; then
+      # Add a newline before the content
+      # We do this here instead of always when we append this line so that
+      # we don't end up with an extra newline at the end of the file for
+      # every time we run this script.
+      if [ ! "$content" == "" ]; then
+        content="${content}\n"
+      fi
+
+      content="${content}${line}"
+    fi
+  done < $file
+
+  # Write the contents back to  the file
+  echo -e "$content" > $file
+}
+
+function check_for_errors() {
+  if [ $? -ne 0 ]; then
+    echo "$1"
+    echo "Exiting"
+    exit -1
+  fi
+}
+
+# Remove the relevant section from .gitmodules
+remove_submodule_section_from .gitmodules
+check_for_errors "Error removing submodule from .gitmodules"
+git add .gitmodules
+
+# Remove the relevant section from .git/config
+remove_submodule_section_from .git/config
+check_for_errors "Error removing submodule from .git/config"
+
+# Remove the cached path to the submodule
+git rm --cached ${MODULE_PATH}
+check_for_errors "Error removing the cached module path"
+
+# Remove the dir from .git/modules
+rm -rf .git/modules/${MODULE_PATH}
+check_for_errors "Error removing .git/modules/${MODULE_PATH}"
+
+# Commit the change
+git commit -m "Removing the submodule ${MODULE_PATH}"
+check_for_errors "Error committing the change"
+
+# Remove the path to the submodule
+rm -rf ${MODULE_PATH}
+check_for_errors "Error removing ${MODULE_PATH}"
+
+echo "Module removed successfully!"

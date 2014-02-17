@@ -1,0 +1,30 @@
+#!/bin/bash
+
+##
+# Clarke Retzer <clarkeretzer@gmail.com>
+#
+# A convenient wrapper around adding a submodule.
+##
+
+function print_usage_and_exit() {
+  echo "Usage: git addmodule https://github.com/my/vim-submodule.git vim/bundle/submodule"
+  exit
+}
+
+# Make sure we have enough arguments
+if [ -z "$1" ]; then
+  print_usage_and_exit
+elif [ -z "$2" ]; then
+  print_usage_and_exit
+fi
+
+SUBMODULE_URL=$1
+SUBMODULE_PATH=$2
+
+# Add the submodule
+git submodule add $SUBMODULE_URL $SUBMODULE_PATH
+
+# Commit the change
+git commit -m "Adding the submodule $SUBMODULE_PATH" .gitmodules $SUBMODULE_PATH
+
+echo "Submodule added and committed successfully!"
